@@ -28,9 +28,12 @@
                 @foreach($selPdt as $pdt)
                 
                 <tr class="rem1">
+                    
+                    <input type="hidden" id="cid" value="{{$pdt->id}}" />
+                    
                     <td class="invert-closeb">
                         <div class="rem">
-                            <div class="close1"> </div>
+                            <div class="close1" id="close-{{$pdt->id}}"> </div>
                         </div>
                     </td>
                     <td class="invert-image"><a href="{{url('/')}}/single">
@@ -56,7 +59,7 @@
                         <div class="quantity"> 
                             <div class="quantity-select">                           
                                 <div class="entry value-minus">&nbsp;</div>
-                                <div class="entry value"><span>
+                                <div id="entry" class="entry value"><span>
                                     @php 
                                     $spdtid = Session::get('pdtid');
                                     $sqty = Session::get('qtyid');
@@ -66,8 +69,12 @@
                                     </span>
                                 
                                 </div>
+                                
+                                
+                                
+                                
                                 <div class="entry value-plus active">&nbsp;</div>
-                                <div id="pdt-{{$pdt->id}}" class="btn btn-warning cart-update">Update</div>
+                                <div id="update-{{$pdt->id}}"  class="btn btn-warning cart-update">Update</div>
                             </div>
                         </div>
                     </td>
@@ -80,27 +87,24 @@
                 </tr>
                 @endforeach
                 <!--quantity-->
-                <script>
-                    $('.value-plus').on('click', function () {
-                        var divUpd = $(this).parent().find('.value'), newVal = parseInt(divUpd.text(), 10) + 1;
-                        divUpd.text(newVal);
-                    });
+                
 
-                    $('.value-minus').on('click', function () {
-                        var divUpd = $(this).parent().find('.value'), newVal = parseInt(divUpd.text(), 10) - 1;
-                        if (newVal >= 1)
-                            divUpd.text(newVal);
-                    });
-                </script>
-                <!--quantity-->
+
             </table>
         </div>
         <div class="checkout-left">	
 
             <div class="checkout-right-basket animated wow slideInRight" data-wow-delay=".5s">
+                
                 <a href="{{url('/')}}/mens"><span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span>Back To Shopping</a>
+                
             </div>
+            
+            
             <div class="checkout-right-basket animated wow slideInRight" data-wow-delay=".5s">
+                
+                {{csrf_field()}}
+                
                 <a  href="{{url('/')}}/user/register">Continue Checkout <span class="glyphicon glyphicon-menu-right pdt-r" aria-hidden="true"></span></a>
             </div>
             
@@ -123,11 +127,129 @@
 
 <script>
   $(document).ready(function(){
-    $(".cart-update").click(function(){
-        var ids = $(this).attr("id");
-        alert(ids);
+
+    $('.value-plus').on('click', function () {
+        var divUpd = $(this).parent().find('.value'), newVal = parseInt(divUpd.text(), 10) + 1;
+        divUpd.text(newVal);
     });
-  })
+
+    $('.value-minus').on('click', function () {
+        var divUpd = $(this).parent().find('.value'), newVal = parseInt(divUpd.text(), 10) - 1;
+        if (newVal >= 1)
+            divUpd.text(newVal);
+    });
+    
+    
+    
+    
+     $(document).on('click', '.close-btn', function() {
+        var closeId = $(this).attr("id");
+        var ids = closeId.substr(10);
+        
+
+        $.ajax({
+          type: 'POST',
+          url: "{{route('cart.remove')}}",
+          data: {
+            'pid': ids,
+            '_token': $('input[name=_token]').val()
+          },
+          
+          success: function(data) {
+            if (data > 0) {
+              $("#totalAmount").text(data);
+              var items = parseInt($('#simpleCart_quantity').text());
+
+              items--; //minus an items
+              $('#simpleCart_quantity').text(items);
+            }
+            else {
+                $("#totalAmount").text(0);
+                $('#simpleCart_quantity').text(0);
+            }
+            
+            
+            $("#cid").val(ids).parent().hide();
+          }
+        });
+      });
+     
+     
+     $(document).on('click', '.close1', function() {
+       var closeId = $(this).attr("id");
+       var ids = closeId.substr(6);
+
+        $.ajax({
+          type: 'POST',
+          url: "{{route('cart.remove')}}",
+          data: {
+            'pid': ids,
+            '_token': $('input[name=_token]').val()
+          },
+          
+          success: function(data) {
+            if (data > 0) {
+              $("#totalAmount").text(data);
+              var items = parseInt($('#simpleCart_quantity').text());
+
+              items--; //minus an items
+              $('#simpleCart_quantity').text(items);
+            }
+            else {
+                $("#totalAmount").text(0);
+                $('#simpleCart_quantity').text(0);
+            }
+            
+            
+            $("#" + closeId).parent().parent().parent().hide();
+          }
+        });
+      });
+     
+     
+     
+     
+     
+     
+    
+    $(document).on('click', '.cart-update', function() {
+        var ids = $(this).attr("id").substr(7);
+        var qty = $(this).siblings('#entry').text();
+        $.ajax({
+          type: 'POST',
+          url: "{{route('cart.add')}}",
+          data: {
+            'pid': ids,
+            'qty': qty,
+            '_token': $('input[name=_token]').val()
+          },
+
+          success: function(data) {
+            alert(data['msg']);
+            if (data['status'] == 1) {
+              var items = parseInt($('#simpleCart_quantity').text());
+              items++;
+              $('#simpleCart_quantity').text(items);
+//              var cartItems = "<div class='single-cart-item'>"
+//              cartItems += "<div class='pdt-image'><img src=\"{{url('/')}}/images/product/" + data['picture'] + "\"/></div>";
+//              cartItems += "<div class='pdt-text'><h4>" + data['title'] + "</h4></div>";
+//              cartItems += "<i id='item-close" + ids + "' class='glyphicon glyphicon-remove pull-right close'></i>";
+//              cartItems += "<span id='qty-" + ids + "' class='qntity'></span>X";
+//              cartItems += "<span class='qntity'>" + data['price'] + "</span>";
+//
+//              cartItems += "</div>";
+//              $(".cart-product-item").append(cartItems);
+            }
+            $('#qty-' + ids).text(qty);
+            $('#totalAmount').text(data['Total']);
+          }
+        });
+        return false;
+      });
+  });
+  
+  
+  
 </script>
 
 @endsection

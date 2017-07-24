@@ -480,4 +480,45 @@ $(document).ready(function () {
         </div>
     </div>
 </div>
+
+
+<script type="text/javascript">
+    
+    $(document).on('click', '#add-to-chart', function() {
+        var ids = $('#ids').val();
+        var qty = $('#entry').text();
+
+        $.ajax({
+          type: 'POST',
+          url: "{{route('cart.add')}}",
+          data: {
+            'pid': ids,
+            'qty': qty,
+            '_token': $('input[name=_token]').val()
+          },
+
+          success: function(data) {
+            alert(data['msg']);
+            if (data['status'] == 1) {
+              var items = parseInt($('#simpleCart_quantity').text());
+              items++;
+              $('#simpleCart_quantity').text(items);
+              var cartItems = "<div class='single-cart-item'>"
+              cartItems += "<div class='pdt-image'><img src=\"{{url('/')}}/images/product/" + data['picture'] + "\"/></div>";
+              cartItems += "<div class='pdt-text'><h4>" + data['title'] + "</h4></div>";
+              cartItems += "<i id='item-close" + ids + "' class='glyphicon glyphicon-remove pull-right close'></i>";
+              cartItems += "<span id='qty-" + ids + "' class='qntity'></span>X";
+              cartItems += "<span class='qntity'>" + data['price'] + "</span>";
+
+              cartItems += "</div>";
+              $(".cart-product-item").append(cartItems);
+            }
+            $('#qty-' + ids).text(qty);
+            $('#totalAmount').text(data['Total']);
+            $('#remove-chart').show();
+          }
+        });
+        return false;
+      });
+</script>
 @endsection

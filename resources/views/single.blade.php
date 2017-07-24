@@ -119,11 +119,18 @@
       <div style="height:20px;"> </div>
 
 
+      
+      
       <div class="occasion-cart">
-        <a href="#" id="add-to-chart" class="item_add hvr-outline-out button2">Add to cart</a>
-        <a href="#" id="remove-chart" class="btn btn-danger" <?php echo(isset($index) && $index !== FALSE) ? "" : "style='display:none'" ?>>Remove</a>
+        <a id="add-to-chart" class="item_add hvr-outline-out button2">Add to cart</a>
+        <a id="remove-chart" class="btn btn-danger remove-cart" <?php echo(isset($index) && $index !== FALSE) ? "" : "style='display:none'" ?>>Remove</a>
       </div>
 
+      
+      
+      
+      
+      
     </div>
     <div class="clearfix"> </div>
 
@@ -212,7 +219,7 @@
               });
 
 
-              $(document).on('click', '#add-to-chart', function(e) {
+              $(document).on('click', '#add-to-chart', function() {
                 var ids = $('#ids').val();
                 var qty = $('#entry').text();
 
@@ -249,9 +256,14 @@
                 return false;
               });
 
-              $(document).on('click', '.close-btn', function() {
-                var ids = $(this).attr("id");
-                ids = ids.substr(10);
+
+              
+              
+              
+              
+        //delete record using .remove-cart button
+              $(document).on('click', '.remove-cart', function() {
+                var ids = $('#ids').val();
 
                 $.ajax({
                   type: 'POST',
@@ -264,19 +276,25 @@
                     if (data > 0) {
                       $("#totalAmount").text(data);
                       var items = parseInt($('#simpleCart_quantity').text());
-                      items--;
+                      
+                      items--; //minus an items
                       $('#simpleCart_quantity').text(items);
                     }
                     else {
                         $("#totalAmount").text(0);
                         $('#simpleCart_quantity').text(0);
                     }
+                    
+ 
+                    $('#entry').text(1);
+                    $('#remove-chart').hide();
+                    
                   }
 
                 });
-                //$(this).parent().hide();
-
               });
+              
+              
             });
 </script>
 <!-- //single -->
